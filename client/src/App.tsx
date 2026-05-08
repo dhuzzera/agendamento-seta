@@ -16,8 +16,9 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/admin"} component={AdminDashboard} />
       <Route path={"/representante"} component={RepresentativeDashboard} />
-      <Route path={"/:slug"} component={PublicBooking} />
       <Route path={"/404"} component={NotFound} />
+      {/* Rota catch-all para agendamento público deve ser por último */}
+      <Route path={"/:slug"} component={PublicBooking} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>

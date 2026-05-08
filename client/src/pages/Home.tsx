@@ -4,18 +4,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useLocation } from "wouter";
 import { CheckCircle2, Calendar, Users, BarChart3 } from "lucide-react";
 import { getLoginUrl } from "@/const";
+import { useEffect } from "react";
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
 
-  // Redirecionar usuários autenticados
-  if (isAuthenticated && user) {
-    if (user.role === "admin") {
-      navigate("/admin");
-    } else if (user.role === "representante") {
-      navigate("/representante");
+  // Redirecionar usuários autenticados usando useEffect
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.role === "admin") {
+        navigate("/admin");
+      } else if (user.role === "representante") {
+        navigate("/representante");
+      }
     }
+  }, [isAuthenticated, user, navigate]);
+
+  // Não renderizar enquanto redireciona
+  if (isAuthenticated && user) {
     return null;
   }
 
