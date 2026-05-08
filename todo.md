@@ -62,6 +62,13 @@
 - [x] Testes de templates de e-mail
 
 ## Deployment e Finalização
-- [ ] Revisar funcionalidades
-- [ ] Testar fluxos completos
-- [ ] Criar checkpoint final
+- [x] Revisar funcionalidades (FUNCTIONAL_REVIEW.md)
+- [x] Corrigir erros de API (links.getBySlug undefined)
+- [x] Corrigir erro de render (setState durante render)
+- [x] Corrigir ordem de rotas (catch-all)
+- [x] Todos os 12 testes passando
+- [x] Autenticação e redirecionamento funcionando
+- [x] Dashboards admin e representante operacionais
+- [x] Fluxo público de agendamento completo
+- [x] Banco de dados e APIs tRPC funcionando
+- [x] Design responsivo e corporativo
