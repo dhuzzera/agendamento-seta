@@ -37,7 +37,8 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   registerStorageProxy(app);
   registerSimpleAuthRoutes(app);
-  registerOAuthRoutes(app);
+  // OAuth is deprecated, using simple auth instead
+  // registerOAuthRoutes(app);
   // tRPC API
   app.use(
     "/api/trpc",

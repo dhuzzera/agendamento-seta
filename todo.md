@@ -69,8 +69,9 @@
 - [x] Corrigir erros de API (links.getBySlug undefined)
 - [x] Corrigir erro de render (setState durante render)
 - [x] Corrigir ordem de rotas (catch-all)
-- [x] Todos os 12 testes passando
-- [x] Autenticação e redirecionamento funcionando
+- [x] Todos os 17 testes passando
+- [x] Autenticação simples funcionando
+- [x] Redirecionamento automático por role
 - [x] Dashboards admin e representante operacionais
 - [x] Fluxo público de agendamento completo
 - [x] Banco de dados e APIs tRPC funcionando
@@ -78,11 +79,12 @@
 
 
 ## Autenticação Simples (Nova)
-- [ ] Remover OAuth Manus e implementar autenticação simples por email/nome
-- [ ] Criar tabela de sessões para rastrear usuários logados
-- [ ] Implementar login com email/nome (sem senha)
-- [ ] Implementar registro/cadastro simples
-- [ ] Adicionar aba de registro na página inicial
-- [ ] Isolamento de dados: representantes só veem seus próprios agendamentos
-- [ ] Isolamento de dados: admin vê todos os agendamentos
-- [ ] Validar acesso por role (admin/representante)
+- [x] Remover OAuth Manus e implementar autenticação simples por email/nome
+- [x] Criar tabela de sessões para rastrear usuários logados
+- [x] Implementar login com email/nome (sem senha)
+- [x] Implementar registro/cadastro simples
+- [x] Adicionar aba de registro na página inicial
+- [x] Isolamento de dados: representantes só veem seus próprios agendamentos
+- [x] Isolamento de dados: admin vê todos os agendamentos
+- [x] Validar acesso por role (admin/representante)
+- [x] Testes de autenticação simples (5 testes passando)
