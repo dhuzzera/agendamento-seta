@@ -24,10 +24,12 @@
 - [ ] Gestão de representantes (CRUD)
 - [ ] Configuração de disponibilidade e bloqueios
 - [ ] Visualização de histórico de agendamentos
+- [x] Componente AppointmentStats reutilizável
 
 ## Área do Representante
 - [x] Dashboard pessoal com agendamentos
 - [x] Geração e exibição de link único personalizado
+- [x] Componente BookingLinkCard reutilizável
 - [ ] Configuração de disponibilidade (dias, horários, intervalo)
 - [ ] Bloqueio de datas específicas
 - [ ] Visualização de histórico de agendamentos
@@ -35,10 +37,11 @@
 ## Fluxo Público de Agendamento
 - [x] Página pública com formulário do cliente (nome, empresa, telefone, e-mail)
 - [x] Seleção de tipo de atendimento (reunião, visita, ligação)
-- [ ] Calendário com disponibilidade em tempo real
-- [ ] Seleção de horário com validação de conflitos
-- [ ] Página de confirmação pós-agendamento
-- [ ] Mensagem de sucesso
+- [x] Calendário com disponibilidade em tempo real
+- [x] Seleção de horário com validação de conflitos
+- [x] Página de confirmação pós-agendamento
+- [x] Mensagem de sucesso
+- [x] Componente CalendarPicker reutilizável
 
 ## Notificações
 - [ ] Enviar e-mail ao representante quando novo agendamento é criado
@@ -52,8 +55,9 @@
 - [x] Garantir responsividade (mobile, tablet, desktop)
 
 ## Testes
-- [ ] Testes unitários para APIs críticas
-- [ ] Testes de validação de agendamento
+- [x] Testes unitários para APIs críticas
+- [x] Testes de validação de agendamento
+- [x] Testes de controle de acesso (role-based)
 - [ ] Testes de conflito de horários
 
 ## Deployment e Finalização

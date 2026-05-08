@@ -7,8 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CalendarPicker } from "@/components/CalendarPicker";
+import { toast } from "sonner";
 
 type BookingStep = "form" | "calendar" | "confirmation";
 
@@ -25,12 +27,16 @@ export default function PublicBooking() {
     appointmentType: "reuniao_online",
     notes: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Buscar link pelo slug
   const { data: link, isLoading: linkLoading, error: linkError } = trpc.links.getBySlug.useQuery(
     { slug: slug || "" },
     { enabled: !!slug }
   );
+
+  // Criar agendamento mutation
+  const createAppointmentMutation = trpc.appointments.create.useMutation();
 
   useEffect(() => {
     if (linkError || (linkLoading === false && !link)) {
@@ -76,10 +82,36 @@ export default function PublicBooking() {
     e.preventDefault();
     // Validar formulário
     if (!formData.clientName || !formData.clientPhone || !formData.clientEmail) {
-      alert("Por favor, preencha todos os campos obrigatórios");
+      toast.error("Por favor, preencha todos os campos obrigatórios");
       return;
     }
     setStep("calendar");
+  };
+
+  const handleDateTimeSelect = async (date: string, time: string) => {
+    if (!link) return;
+
+    setIsSubmitting(true);
+    try {
+      await createAppointmentMutation.mutateAsync({
+        representativeId: link.representativeId,
+        clientName: formData.clientName,
+        clientCompany: formData.clientCompany,
+        clientPhone: formData.clientPhone,
+        clientEmail: formData.clientEmail,
+        clientCity: formData.clientCity,
+        appointmentType: formData.appointmentType as "reuniao_online" | "visita_presencial" | "ligacao",
+        appointmentDate: date,
+        appointmentTime: time,
+        notes: formData.notes,
+      });
+      setStep("confirmation");
+      toast.success("Agendamento realizado com sucesso!");
+    } catch (error: any) {
+      toast.error(error.message || "Erro ao agendar. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -200,34 +232,37 @@ export default function PublicBooking() {
         )}
 
         {step === "calendar" && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Selecione Data e Horário</CardTitle>
-              <p className="text-sm text-muted-foreground mt-2">
-                Escolha a data e horário mais conveniente para você
-              </p>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-center py-8">
-                Calendário de disponibilidade em desenvolvimento...
-              </p>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setStep("form")}>
-                  Voltar
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-4">
+            <CalendarPicker
+              onDateTimeSelect={handleDateTimeSelect}
+              availableHours={["09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00"]}
+              isLoading={isSubmitting}
+            />
+            <Button variant="outline" onClick={() => setStep("form")} className="w-full">
+              Voltar
+            </Button>
+          </div>
         )}
 
         {step === "confirmation" && (
-          <Card>
+          <Card className="border-green-200 bg-green-50">
             <CardHeader>
-              <CardTitle>Agendamento Confirmado!</CardTitle>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-6 w-6 text-green-600" />
+                <CardTitle className="text-green-900">Agendamento Confirmado!</CardTitle>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                Seu agendamento foi solicitado com sucesso! Nosso representante entrará em contato para confirmar.
+              <p className="text-green-800">
+                Seu agendamento foi solicitado com sucesso! Você receberá um e-mail de confirmação em breve.
+              </p>
+              <div className="bg-white rounded-lg p-4 space-y-2 text-sm">
+                <div><span className="font-semibold text-foreground">Nome:</span> <span className="text-muted-foreground">{formData.clientName}</span></div>
+                <div><span className="font-semibold text-foreground">E-mail:</span> <span className="text-muted-foreground">{formData.clientEmail}</span></div>
+                <div><span className="font-semibold text-foreground">Telefone:</span> <span className="text-muted-foreground">{formData.clientPhone}</span></div>
+              </div>
+              <p className="text-sm text-green-700 italic">
+                Nosso representante entrará em contato para confirmar o agendamento.
               </p>
               <Button className="w-full bg-primary hover:bg-primary/90" onClick={() => navigate("/")}>
                 Voltar para Home

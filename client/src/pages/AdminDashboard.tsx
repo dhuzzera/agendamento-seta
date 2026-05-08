@@ -1,9 +1,10 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Users, Calendar, CheckCircle2 } from "lucide-react";
+import { trpc } from "@/lib/trpc";
+import { AppointmentStats } from "@/components/AppointmentStats";
 
 export default function AdminDashboard() {
   const { user, isAuthenticated } = useAuth();
@@ -19,6 +20,13 @@ export default function AdminDashboard() {
     return null;
   }
 
+  const stats = useMemo(() => ({
+    total: 0,
+    pending: 0,
+    confirmed: 0,
+    cancelled: 0,
+  }), []);
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -31,51 +39,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total de Agendamentos</CardTitle>
-              <Calendar className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">0</div>
-              <p className="text-xs text-muted-foreground">Todos os agendamentos</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-              <BarChart3 className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">0</div>
-              <p className="text-xs text-muted-foreground">Aguardando confirmação</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Confirmados</CardTitle>
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">0</div>
-              <p className="text-xs text-muted-foreground">Já confirmados</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Representantes</CardTitle>
-              <Users className="h-4 w-4 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">0</div>
-              <p className="text-xs text-muted-foreground">Ativos no sistema</p>
-            </CardContent>
-          </Card>
-        </div>
+        <AppointmentStats data={stats} />
 
         {/* Content */}
         <Card>

@@ -1,16 +1,16 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Calendar, Link2, Clock, CheckCircle2 } from "lucide-react";
+import { Calendar, Clock, CheckCircle2 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import { BookingLinkCard } from "@/components/BookingLinkCard";
 
 export default function RepresentativeDashboard() {
   const { user, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
-  const { data: link } = trpc.links.getMe.useQuery(undefined, {
+  const { data: link, isLoading: linkLoading } = trpc.links.getMe.useQuery(undefined, {
     enabled: isAuthenticated && user?.role === "representante",
   });
 
@@ -24,7 +24,12 @@ export default function RepresentativeDashboard() {
     return null;
   }
 
-  const bookingUrl = link?.slug ? `${window.location.origin}/${link.slug}` : "";
+  const stats = useMemo(() => ({
+    total: 0,
+    pending: 0,
+    confirmed: 0,
+    cancelled: 0,
+  }), []);
 
   return (
     <DashboardLayout>
@@ -38,47 +43,9 @@ export default function RepresentativeDashboard() {
         </div>
 
         {/* Link Personalizado */}
-        <Card className="border-primary/20 bg-primary/5">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Link2 className="h-5 w-5 text-primary" />
-              Seu Link de Agendamento
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {bookingUrl ? (
-              <>
-                <div className="bg-background rounded-lg p-4 border border-border">
-                  <p className="text-sm text-muted-foreground mb-2">Link único para compartilhar:</p>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={bookingUrl}
-                      readOnly
-                      className="flex-1 px-3 py-2 rounded-lg bg-muted border border-border text-foreground text-sm"
-                    />
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        navigator.clipboard.writeText(bookingUrl);
-                      }}
-                    >
-                      Copiar
-                    </Button>
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Compartilhe este link com seus clientes para que eles possam agendar reuniões com você.
-                </p>
-              </>
-            ) : (
-              <p className="text-muted-foreground">Carregando seu link...</p>
-            )}
-          </CardContent>
-        </Card>
+        <BookingLinkCard slug={link?.slug} isLoading={linkLoading} />
 
-        {/* Stats */}
+        {/* Stats - apenas 3 cards para representante */}
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -86,7 +53,7 @@ export default function RepresentativeDashboard() {
               <Calendar className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">{stats.total}</div>
               <p className="text-xs text-muted-foreground">Total de agendamentos</p>
             </CardContent>
           </Card>
@@ -97,7 +64,7 @@ export default function RepresentativeDashboard() {
               <Clock className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">{stats.pending}</div>
               <p className="text-xs text-muted-foreground">Aguardando confirmação</p>
             </CardContent>
           </Card>
@@ -108,7 +75,7 @@ export default function RepresentativeDashboard() {
               <CheckCircle2 className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">{stats.confirmed}</div>
               <p className="text-xs text-muted-foreground">Já confirmados</p>
             </CardContent>
           </Card>
