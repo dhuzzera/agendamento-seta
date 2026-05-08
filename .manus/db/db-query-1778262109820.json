@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE `sessions` (\n\t`id` varchar(128) NOT NULL,\n\t`userId` int NOT NULL,\n\t`expiresAt` timestamp NOT NULL,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `sessions_id` PRIMARY KEY(`id`)\n);\nALTER TABLE `users` DROP INDEX `users_openId_unique`;\nALTER TABLE `users` MODIFY COLUMN `name` text NOT NULL;\nALTER TABLE `users` MODIFY COLUMN `email` varchar(320) NOT NULL;\nALTER TABLE `users` MODIFY COLUMN `role` enum('admin','representante') NOT NULL DEFAULT 'representante';\nALTER TABLE `users` ADD CONSTRAINT `users_email_unique` UNIQUE(`email`);\nALTER TABLE `users` DROP COLUMN `openId`;\nALTER TABLE `users` DROP COLUMN `loginMethod`;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2k6JBGjnpbuQS4Z.root --database jEYJdBU8dyaGj4hMJu7HTw --execute CREATE TABLE `sessions` (\n\t`id` varchar(128) NOT NULL,\n\t`userId` int NOT NULL,\n\t`expiresAt` timestamp NOT NULL,\n\t`createdAt` timestamp NOT NULL DEFAULT (now()),\n\tCONSTRAINT `sessions_id` PRIMARY KEY(`id`)\n);\nALTER TABLE `users` DROP INDEX `users_openId_unique`;\nALTER TABLE `users` MODIFY COLUMN `name` text NOT NULL;\nALTER TABLE `users` MODIFY COLUMN `email` varchar(320) NOT NULL;\nALTER TABLE `users` MODIFY COLUMN `role` enum('admin','representante') NOT NULL DEFAULT 'representante';\nALTER TABLE `users` ADD CONSTRAINT `users_email_unique` UNIQUE(`email`);\nALTER TABLE `users` DROP COLUMN `openId`;\nALTER TABLE `users` DROP COLUMN `loginMethod`;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1789
+}

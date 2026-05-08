@@ -75,3 +75,14 @@
 - [x] Fluxo público de agendamento completo
 - [x] Banco de dados e APIs tRPC funcionando
 - [x] Design responsivo e corporativo
+
+
+## Autenticação Simples (Nova)
+- [ ] Remover OAuth Manus e implementar autenticação simples por email/nome
+- [ ] Criar tabela de sessões para rastrear usuários logados
+- [ ] Implementar login com email/nome (sem senha)
+- [ ] Implementar registro/cadastro simples
+- [ ] Adicionar aba de registro na página inicial
+- [ ] Isolamento de dados: representantes só veem seus próprios agendamentos
+- [ ] Isolamento de dados: admin vê todos os agendamentos
+- [ ] Validar acesso por role (admin/representante)
