@@ -16,18 +16,21 @@ describe("Authorization and Data Isolation", () => {
     representativeUser1 = await loginOrRegisterUser(
       `rep1-${Date.now()}@example.com`,
       "Representative 1",
+      "RepPassword123",
       "representante"
     );
 
     representativeUser2 = await loginOrRegisterUser(
       `rep2-${Date.now()}@example.com`,
       "Representative 2",
+      "RepPassword456",
       "representante"
     );
 
     adminUser = await loginOrRegisterUser(
       `admin-${Date.now()}@example.com`,
       "Admin User",
+      "AdminPassword123",
       "admin"
     );
 

@@ -1,17 +1,45 @@
 import type { Express, Request, Response } from "express";
-import { createSessionForUser, loginOrRegisterUser, clearSession, getUserFromSession } from "./simpleAuth";
+import { createSessionForUser, loginUser, registerUser, clearSession, getUserFromSession } from "./simpleAuth";
 
 export function registerSimpleAuthRoutes(app: Express) {
-  // Login/Registro
-  app.post("/api/auth/login", async (req: Request, res: Response) => {
+  // Register new user
+  app.post("/api/auth/register", async (req: Request, res: Response) => {
     try {
-      const { email, name, role } = req.body;
+      const { email, name, password, role } = req.body;
       
-      if (!email || !name) {
-        return res.status(400).json({ error: "Email and name are required" });
+      if (!email || !name || !password) {
+        return res.status(400).json({ error: "Email, nome e senha são obrigatórios" });
       }
       
-      const user = await loginOrRegisterUser(email, name, role || "representante");
+      const user = await registerUser(email, name, password, role || "representante");
+      await createSessionForUser(user.id, res);
+      
+      res.json({
+        success: true,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+        },
+      });
+    } catch (error) {
+      console.error("[Auth] Register error:", error);
+      const message = error instanceof Error ? error.message : "Registro falhou";
+      res.status(400).json({ error: message });
+    }
+  });
+  
+  // Login with email and password
+  app.post("/api/auth/login", async (req: Request, res: Response) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ error: "Email e senha são obrigatórios" });
+      }
+      
+      const user = await loginUser(email, password);
       await createSessionForUser(user.id, res);
       
       res.json({
@@ -25,7 +53,8 @@ export function registerSimpleAuthRoutes(app: Express) {
       });
     } catch (error) {
       console.error("[Auth] Login error:", error);
-      res.status(500).json({ error: "Login failed" });
+      const message = error instanceof Error ? error.message : "Login falhou";
+      res.status(401).json({ error: message });
     }
   });
   
@@ -39,7 +68,7 @@ export function registerSimpleAuthRoutes(app: Express) {
       res.json({ success: true });
     } catch (error) {
       console.error("[Auth] Logout error:", error);
-      res.status(500).json({ error: "Logout failed" });
+      res.status(500).json({ error: "Logout falhou" });
     }
   });
   
@@ -60,7 +89,7 @@ export function registerSimpleAuthRoutes(app: Express) {
       });
     } catch (error) {
       console.error("[Auth] Get me error:", error);
-      res.status(500).json({ error: "Failed to get user" });
+      res.status(500).json({ error: "Falha ao obter usuário" });
     }
   });
 }

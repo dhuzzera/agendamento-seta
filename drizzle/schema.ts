@@ -10,6 +10,7 @@ export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
   email: varchar("email", { length: 320 }).notNull().unique(),
   name: text("name").notNull(),
+  password: varchar("password", { length: 255 }).notNull(),
   role: mysqlEnum("role", ["admin", "representante"]).default("representante").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
