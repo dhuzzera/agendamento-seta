@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -11,12 +10,20 @@ import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CalendarPicker } from "@/components/CalendarPicker";
 import { toast } from "sonner";
+import { useState, useEffect } from "react";
+import { format } from "date-fns";
 
 type BookingStep = "form" | "calendar" | "confirmation";
 
 export default function PublicBooking() {
   const { slug } = useParams<{ slug: string }>();
   const [, navigate] = useLocation();
+  
+  // Não processar rotas especiais como /404, /admin, /representante
+  if (slug === "404" || slug === "admin" || slug === "representante") {
+    return null; // Deixar wouter rotear para o componente correto
+  }
+
   const [step, setStep] = useState<BookingStep>("form");
   const [formData, setFormData] = useState({
     clientName: "",
@@ -48,8 +55,8 @@ export default function PublicBooking() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
-          <p className="text-muted-foreground">Carregando...</p>
+          <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
+          <p className="text-muted-foreground">Carregando formulário de agendamento...</p>
         </div>
       </div>
     );
@@ -58,218 +65,218 @@ export default function PublicBooking() {
   if (!link) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Link Inválido</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                O link de agendamento não foi encontrado ou não está mais disponível.
-              </AlertDescription>
-            </Alert>
-            <Button className="w-full mt-4" onClick={() => navigate("/")}>
-              Voltar para Home
-            </Button>
-          </CardContent>
-        </Card>
+        <Alert variant="destructive" className="max-w-md">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Link de agendamento inválido ou expirado.
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Validar formulário
-    if (!formData.clientName || !formData.clientPhone || !formData.clientEmail) {
-      toast.error("Por favor, preencha todos os campos obrigatórios");
+    if (!formData.clientName || !formData.clientEmail || !formData.clientPhone) {
+      toast.error("Preencha todos os campos obrigatórios");
       return;
     }
     setStep("calendar");
   };
 
   const handleDateTimeSelect = async (date: string, time: string) => {
-    if (!link) return;
-
     setIsSubmitting(true);
     try {
+      const selectedDate = new Date(date);
+
       await createAppointmentMutation.mutateAsync({
         representativeId: link.representativeId,
         clientName: formData.clientName,
-        clientCompany: formData.clientCompany,
-        clientPhone: formData.clientPhone,
         clientEmail: formData.clientEmail,
+        clientPhone: formData.clientPhone,
+        clientCompany: formData.clientCompany,
         clientCity: formData.clientCity,
         appointmentType: formData.appointmentType as "reuniao_online" | "visita_presencial" | "ligacao",
         appointmentDate: date,
         appointmentTime: time,
         notes: formData.notes,
       });
-      setStep("confirmation");
+
       toast.success("Agendamento realizado com sucesso!");
-    } catch (error: any) {
-      toast.error(error.message || "Erro ao agendar. Tente novamente.");
+      setStep("confirmation");
+    } catch (error) {
+      console.error("Erro ao criar agendamento:", error);
+      toast.error("Erro ao criar agendamento. Tente novamente.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-8">
-      {/* Header */}
-      <div className="container mb-8">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-lg">S</span>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4">
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
+              <span className="text-white font-bold text-sm">S</span>
+            </div>
+            <h1 className="text-2xl font-bold text-primary">Seta Embalagens</h1>
           </div>
-          <span className="text-xl font-bold text-primary">Agendamento Seta</span>
+          <h2 className="text-3xl font-bold text-foreground mb-2">
+            Agendar Reunião
+          </h2>
+          <p className="text-muted-foreground">
+            Preencha os dados abaixo para agendar sua reunião
+          </p>
         </div>
-      </div>
 
-      <div className="container max-w-2xl">
-        {step === "form" && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Agende uma Reunião</CardTitle>
-              <p className="text-sm text-muted-foreground mt-2">
-                Preencha os dados abaixo para agendar uma reunião com nosso representante
-              </p>
-            </CardHeader>
-            <CardContent>
+        {/* Form Card */}
+        <Card className="shadow-lg border-0">
+          <CardContent className="p-8">
+            {step === "form" && (
               <form onSubmit={handleFormSubmit} className="space-y-6">
-                {/* Nome */}
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nome *</Label>
-                  <Input
-                    id="name"
-                    placeholder="Seu nome completo"
-                    value={formData.clientName}
-                    onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
-                    required
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">Nome *</Label>
+                    <Input
+                      id="name"
+                      value={formData.clientName}
+                      onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
+                      placeholder="Seu nome"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="email">Email *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.clientEmail}
+                      onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
+                      placeholder="seu@email.com"
+                      required
+                    />
+                  </div>
                 </div>
 
-                {/* Empresa */}
-                <div className="space-y-2">
-                  <Label htmlFor="company">Empresa</Label>
-                  <Input
-                    id="company"
-                    placeholder="Nome da sua empresa"
-                    value={formData.clientCompany}
-                    onChange={(e) => setFormData({ ...formData, clientCompany: e.target.value })}
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="phone">Telefone *</Label>
+                    <Input
+                      id="phone"
+                      value={formData.clientPhone}
+                      onChange={(e) => setFormData({ ...formData, clientPhone: e.target.value })}
+                      placeholder="(11) 99999-9999"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="company">Empresa</Label>
+                    <Input
+                      id="company"
+                      value={formData.clientCompany}
+                      onChange={(e) => setFormData({ ...formData, clientCompany: e.target.value })}
+                      placeholder="Nome da empresa"
+                    />
+                  </div>
                 </div>
 
-                {/* Telefone */}
-                <div className="space-y-2">
-                  <Label htmlFor="phone">WhatsApp/Telefone *</Label>
-                  <Input
-                    id="phone"
-                    placeholder="(11) 99999-9999"
-                    value={formData.clientPhone}
-                    onChange={(e) => setFormData({ ...formData, clientPhone: e.target.value })}
-                    required
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="city">Cidade</Label>
+                    <Input
+                      id="city"
+                      value={formData.clientCity}
+                      onChange={(e) => setFormData({ ...formData, clientCity: e.target.value })}
+                      placeholder="São Paulo"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="type">Tipo de Atendimento *</Label>
+                    <Select value={formData.appointmentType} onValueChange={(value) => setFormData({ ...formData, appointmentType: value })}>
+                      <SelectTrigger id="type">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="reuniao_online">Reunião Online</SelectItem>
+                        <SelectItem value="visita_presencial">Visita Presencial</SelectItem>
+                        <SelectItem value="ligacao">Ligação</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
-                {/* Email */}
-                <div className="space-y-2">
-                  <Label htmlFor="email">E-mail *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="seu.email@empresa.com"
-                    value={formData.clientEmail}
-                    onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
-                    required
-                  />
-                </div>
-
-                {/* Cidade */}
-                <div className="space-y-2">
-                  <Label htmlFor="city">Cidade</Label>
-                  <Input
-                    id="city"
-                    placeholder="São Paulo"
-                    value={formData.clientCity}
-                    onChange={(e) => setFormData({ ...formData, clientCity: e.target.value })}
-                  />
-                </div>
-
-                {/* Tipo de Atendimento */}
-                <div className="space-y-2">
-                  <Label htmlFor="type">Tipo de Atendimento *</Label>
-                  <Select value={formData.appointmentType} onValueChange={(value) => setFormData({ ...formData, appointmentType: value })}>
-                    <SelectTrigger id="type">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="reuniao_online">Reunião Online</SelectItem>
-                      <SelectItem value="visita_presencial">Visita Presencial</SelectItem>
-                      <SelectItem value="ligacao">Ligação</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Observações */}
-                <div className="space-y-2">
+                <div>
                   <Label htmlFor="notes">Observações</Label>
                   <Textarea
                     id="notes"
-                    placeholder="Deixe aqui alguma informação adicional sobre sua demanda"
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    placeholder="Deixe suas observações ou dúvidas..."
                     rows={4}
                   />
                 </div>
 
-                <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
-                  Continuar para Agendamento
+                <Button type="submit" className="w-full" size="lg">
+                  Próximo: Selecionar Data e Hora
                 </Button>
               </form>
-            </CardContent>
-          </Card>
-        )}
+            )}
 
-        {step === "calendar" && (
-          <div className="space-y-4">
-            <CalendarPicker
-              onDateTimeSelect={handleDateTimeSelect}
-              availableHours={["09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00"]}
-              isLoading={isSubmitting}
-            />
-            <Button variant="outline" onClick={() => setStep("form")} className="w-full">
-              Voltar
-            </Button>
-          </div>
-        )}
+            {step === "calendar" && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">Selecione Data e Hora</h3>
+                  <CalendarPicker
+                    onDateTimeSelect={handleDateTimeSelect}
+                    isLoading={isSubmitting}
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setStep("form")}
+                  disabled={isSubmitting}
+                >
+                  Voltar
+                </Button>
+              </div>
+            )}
 
-        {step === "confirmation" && (
-          <Card className="border-green-200 bg-green-50">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-6 w-6 text-green-600" />
-                <CardTitle className="text-green-900">Agendamento Confirmado!</CardTitle>
+            {step === "confirmation" && (
+              <div className="text-center space-y-6">
+                <div className="flex justify-center">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-green-100 rounded-full animate-pulse" />
+                    <CheckCircle2 className="relative h-16 w-16 text-green-500" />
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-foreground mb-2">
+                    Agendamento Confirmado!
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    Um email de confirmação foi enviado para {formData.clientEmail}
+                  </p>
+                  <div className="bg-slate-50 rounded-lg p-4 text-left space-y-2 text-sm">
+                    <p><strong>Nome:</strong> {formData.clientName}</p>
+                    <p><strong>Empresa:</strong> {formData.clientCompany || "Não informado"}</p>
+                    <p><strong>Telefone:</strong> {formData.clientPhone}</p>
+                    <p><strong>Tipo:</strong> {formData.appointmentType === "reuniao_online" ? "Reunião Online" : formData.appointmentType === "visita_presencial" ? "Visita Presencial" : "Ligação"}</p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => window.location.href = "/"}
+                  className="w-full"
+                  size="lg"
+                >
+                  Voltar para Home
+                </Button>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-green-800">
-                Seu agendamento foi solicitado com sucesso! Você receberá um e-mail de confirmação em breve.
-              </p>
-              <div className="bg-white rounded-lg p-4 space-y-2 text-sm">
-                <div><span className="font-semibold text-foreground">Nome:</span> <span className="text-muted-foreground">{formData.clientName}</span></div>
-                <div><span className="font-semibold text-foreground">E-mail:</span> <span className="text-muted-foreground">{formData.clientEmail}</span></div>
-                <div><span className="font-semibold text-foreground">Telefone:</span> <span className="text-muted-foreground">{formData.clientPhone}</span></div>
-              </div>
-              <p className="text-sm text-green-700 italic">
-                Nosso representante entrará em contato para confirmar o agendamento.
-              </p>
-              <Button className="w-full bg-primary hover:bg-primary/90" onClick={() => navigate("/")}>
-                Voltar para Home
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
