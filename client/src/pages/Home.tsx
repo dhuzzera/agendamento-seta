@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { AuthTabs } from "@/components/AuthTabs";
 
 export default function Home() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, refresh } = useAuth();
   const [, navigate] = useLocation();
 
   useEffect(() => {
@@ -16,6 +16,11 @@ export default function Home() {
       }
     }
   }, [isAuthenticated, user, navigate]);
+
+  const handleLoginSuccess = () => {
+    // Refresh auth state and trigger redirect
+    refresh();
+  };
 
   if (isAuthenticated && user) {
     return null;
@@ -86,9 +91,7 @@ export default function Home() {
           {/* Right side - Auth Form */}
           <div className="flex justify-center">
             <AuthTabs
-              onLoginSuccess={() => {
-                // Redirecionamento é feito automaticamente pelo useEffect
-              }}
+              onLoginSuccess={handleLoginSuccess}
             />
           </div>
         </div>

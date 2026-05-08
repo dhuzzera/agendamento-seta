@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE users SET role = 'admin' WHERE email = 'eduardo.franca@setaembalagens.com.br';",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2k6JBGjnpbuQS4Z.root --database jEYJdBU8dyaGj4hMJu7HTw --execute UPDATE users SET role = 'admin' WHERE email = 'eduardo.franca@setaembalagens.com.br';",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 398
+}
