@@ -1,4 +1,5 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, boolean, time, date } from "drizzle-orm/mysql-core";
+import { relations } from "drizzle-orm";
 
 /**
  * Core user table backing auth flow.
@@ -16,7 +17,7 @@ export const users = mysqlTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  role: mysqlEnum("role", ["user", "admin", "representante"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -25,4 +26,89 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+/**
+ * Representantes (usuários com role 'representante')
+ * Estende a tabela users com informações específicas
+ */
+export const representatives = mysqlTable("representatives", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  phone: varchar("phone", { length: 20 }),
+  city: varchar("city", { length: 100 }),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Representative = typeof representatives.$inferSelect;
+export type InsertRepresentative = typeof representatives.$inferInsert;
+
+/**
+ * Links personalizados para agendamento
+ * Cada representante possui um link único (slug)
+ */
+export const representativeLinks = mysqlTable("representative_links", {
+  id: int("id").autoincrement().primaryKey(),
+  representativeId: int("representativeId").notNull().unique(),
+  slug: varchar("slug", { length: 100 }).notNull().unique(),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type RepresentativeLink = typeof representativeLinks.$inferSelect;
+export type InsertRepresentativeLink = typeof representativeLinks.$inferInsert;
+
+/**
+ * Disponibilidade dos representantes
+ * Define dias da semana, horários e intervalo entre reuniões
+ */
+export const availability = mysqlTable("availability", {
+  id: int("id").autoincrement().primaryKey(),
+  representativeId: int("representativeId").notNull(),
+  dayOfWeek: int("dayOfWeek").notNull(), // 0 = domingo, 6 = sábado
+  startTime: time("startTime").notNull(), // HH:MM:SS
+  endTime: time("endTime").notNull(), // HH:MM:SS
+  intervalMinutes: int("intervalMinutes").default(60).notNull(), // 30, 45 ou 60
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Availability = typeof availability.$inferSelect;
+export type InsertAvailability = typeof availability.$inferInsert;
+
+/**
+ * Bloqueios de datas (feriados, férias, etc.)
+ */
+export const dateBlockages = mysqlTable("date_blockages", {
+  id: int("id").autoincrement().primaryKey(),
+  representativeId: int("representativeId").notNull(),
+  blockedDate: date("blockedDate").notNull(),
+  reason: varchar("reason", { length: 255 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type DateBlockage = typeof dateBlockages.$inferSelect;
+export type InsertDateBlockage = typeof dateBlockages.$inferInsert;
+
+/**
+ * Agendamentos de clientes
+ */
+export const appointments = mysqlTable("appointments", {
+  id: int("id").autoincrement().primaryKey(),
+  representativeId: int("representativeId").notNull(),
+  clientName: varchar("clientName", { length: 255 }).notNull(),
+  clientCompany: varchar("clientCompany", { length: 255 }),
+  clientPhone: varchar("clientPhone", { length: 20 }).notNull(),
+  clientEmail: varchar("clientEmail", { length: 320 }).notNull(),
+  clientCity: varchar("clientCity", { length: 100 }),
+  appointmentType: mysqlEnum("appointmentType", ["reuniao_online", "visita_presencial", "ligacao"]).notNull(),
+  appointmentDate: date("appointmentDate").notNull(),
+  appointmentTime: time("appointmentTime").notNull(),
+  notes: text("notes"),
+  status: mysqlEnum("status", ["pendente", "confirmado", "cancelado", "concluido"]).default("pendente").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Appointment = typeof appointments.$inferSelect;
+export type InsertAppointment = typeof appointments.$inferInsert;

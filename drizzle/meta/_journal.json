@@ -1,5 +1,27 @@
 {
   "version": "7",
   "dialect": "mysql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1778260490506,
+      "tag": "0000_modern_microchip",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1778260649915,
+      "tag": "0001_useful_sentinels",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1778260759924,
+      "tag": "0002_futuristic_hardball",
+      "breakpoints": true
+    }
+  ]
 }
