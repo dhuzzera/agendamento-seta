@@ -9,14 +9,14 @@
 - [x] Configurar OAuth Manus (já integrado)
 - [x] Implementar role-based access control (admin/representante)
 - [x] Criar protectedProcedure para representantes
-- [ ] Criar adminProcedure para admins
+- [x] Criar adminProcedure para admins
 
 ## APIs de Back-end (tRPC)
 - [x] Representantes: CRUD (criar, listar, editar, desativar)
 - [x] Agendamentos: criar, listar, filtrar, atualizar status, cancelar
 - [x] Disponibilidade: configurar horários, bloquear datas
 - [x] Links personalizados: gerar, validar
-- [ ] Notificações: enviar e-mail ao confirmar agendamento
+- [x] Notificações: enviar e-mail ao confirmar agendamento
 
 ## Interface Admin
 - [x] Dashboard com estatísticas de agendamentos
@@ -44,9 +44,9 @@
 - [x] Componente CalendarPicker reutilizável
 
 ## Notificações
-- [ ] Enviar e-mail ao representante quando novo agendamento é criado
+- [x] Enviar e-mail ao representante quando novo agendamento é criado
 - [ ] Enviar e-mail ao admin quando novo agendamento é criado
-- [ ] Template de e-mail profissional
+- [x] Template de e-mail profissional
 
 ## Design e Estilo
 - [x] Configurar cores (#005383, branco, cinza claro)
@@ -58,7 +58,8 @@
 - [x] Testes unitários para APIs críticas
 - [x] Testes de validação de agendamento
 - [x] Testes de controle de acesso (role-based)
-- [ ] Testes de conflito de horários
+- [ ] Testes de conflito de horários (rejeitar duplicados)
+- [x] Testes de templates de e-mail
 
 ## Deployment e Finalização
 - [ ] Revisar funcionalidades

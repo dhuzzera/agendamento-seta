@@ -6,6 +6,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import * as dbHelpers from "./db";
 import { nanoid } from "nanoid";
+import { sendEmail, getAppointmentEmailTemplate, getConfirmationEmailTemplate } from "./_core/email";
 
 export const appRouter = router({
   system: systemRouter,
@@ -120,7 +121,7 @@ export const appRouter = router({
             message: "Horário já está ocupado",
           });
         }
-        return dbHelpers.createAppointment({
+        const appointment = await dbHelpers.createAppointment({
           representativeId: input.representativeId,
           clientName: input.clientName,
           clientCompany: input.clientCompany,
@@ -133,6 +134,55 @@ export const appRouter = router({
           notes: input.notes,
           status: "pendente",
         });
+
+        // Enviar e-mails de notificacao
+        try {
+          const representative = await dbHelpers.getRepresentativeById(
+            input.representativeId
+          );
+          const representativeUser = representative
+            ? await dbHelpers.getUserById(representative.userId)
+            : null;
+
+          if (representativeUser?.email) {
+            const representativeEmailHtml = getAppointmentEmailTemplate({
+              clientName: input.clientName,
+              clientCompany: input.clientCompany || "",
+              clientPhone: input.clientPhone,
+              clientEmail: input.clientEmail,
+              clientCity: input.clientCity || "",
+              appointmentType: input.appointmentType,
+              appointmentDate: input.appointmentDate,
+              appointmentTime: input.appointmentTime,
+              notes: input.notes,
+              representativeName: representativeUser.name || "Representante",
+            });
+            await sendEmail({
+              to: representativeUser.email,
+              subject: `Novo Agendamento: ${input.clientName}`,
+              html: representativeEmailHtml,
+            });
+          }
+
+          // Enviar e-mail de confirmacao ao cliente
+          const clientEmailHtml = getConfirmationEmailTemplate({
+            clientName: input.clientName,
+            appointmentType: input.appointmentType,
+            appointmentDate: input.appointmentDate,
+            appointmentTime: input.appointmentTime,
+            representativeName: representativeUser?.name || "Seta Embalagens",
+          });
+          await sendEmail({
+            to: input.clientEmail,
+            subject: "Agendamento Confirmado - Seta Embalagens",
+            html: clientEmailHtml,
+          });
+        } catch (error) {
+          console.error("[Appointments] Error sending notification emails:", error);
+          // Nao falhar o agendamento se o e-mail falhar
+        }
+
+        return appointment;
       }),
     updateStatus: protectedProcedure
       .input(

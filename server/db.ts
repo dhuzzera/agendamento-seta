@@ -89,11 +89,26 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+// Usuarios
+export async function getUserById(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
 // Representantes
 export async function getRepresentativeByUserId(userId: number) {
   const db = await getDb();
   if (!db) return undefined;
   const result = await db.select().from(representatives).where(eq(representatives.userId, userId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function getRepresentativeById(representativeId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(representatives).where(eq(representatives.id, representativeId)).limit(1);
   return result.length > 0 ? result[0] : undefined;
 }
 
