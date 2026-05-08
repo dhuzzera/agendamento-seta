@@ -10,15 +10,12 @@ export default function AdminDashboard() {
   const { user, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
 
+  // Redirecionar se nao for admin
   useEffect(() => {
     if (!isAuthenticated || user?.role !== "admin") {
       navigate("/");
     }
   }, [isAuthenticated, user, navigate]);
-
-  if (!isAuthenticated || user?.role !== "admin") {
-    return null;
-  }
 
   const stats = useMemo(() => ({
     total: 0,
@@ -26,6 +23,11 @@ export default function AdminDashboard() {
     confirmed: 0,
     cancelled: 0,
   }), []);
+
+  // Nao renderizar enquanto redireciona
+  if (!isAuthenticated || user?.role !== "admin") {
+    return null;
+  }
 
   return (
     <DashboardLayout>

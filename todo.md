@@ -25,6 +25,7 @@
 - [ ] Configuração de disponibilidade e bloqueios
 - [ ] Visualização de histórico de agendamentos
 - [x] Componente AppointmentStats reutilizável
+- [x] APIs tRPC para todas as funcionalidades
 
 ## Área do Representante
 - [x] Dashboard pessoal com agendamentos
@@ -33,6 +34,7 @@
 - [ ] Configuração de disponibilidade (dias, horários, intervalo)
 - [ ] Bloqueio de datas específicas
 - [ ] Visualização de histórico de agendamentos
+- [x] APIs tRPC para todas as funcionalidades
 
 ## Fluxo Público de Agendamento
 - [x] Página pública com formulário do cliente (nome, empresa, telefone, e-mail)
@@ -47,6 +49,7 @@
 - [x] Enviar e-mail ao representante quando novo agendamento é criado
 - [ ] Enviar e-mail ao admin quando novo agendamento é criado
 - [x] Template de e-mail profissional
+- [ ] Validar integração de e-mail (erro 404)
 
 ## Design e Estilo
 - [x] Configurar cores (#005383, branco, cinza claro)

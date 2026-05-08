@@ -10,19 +10,17 @@ import { BookingLinkCard } from "@/components/BookingLinkCard";
 export default function RepresentativeDashboard() {
   const { user, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
-  const { data: link, isLoading: linkLoading } = trpc.links.getMe.useQuery(undefined, {
-    enabled: isAuthenticated && user?.role === "representante",
-  });
 
+  // Redirecionar se nao for representante
   useEffect(() => {
     if (!isAuthenticated || user?.role !== "representante") {
       navigate("/");
     }
   }, [isAuthenticated, user, navigate]);
 
-  if (!isAuthenticated || user?.role !== "representante") {
-    return null;
-  }
+  const { data: link, isLoading: linkLoading } = trpc.links.getMe.useQuery(undefined, {
+    enabled: isAuthenticated && user?.role === "representante",
+  });
 
   const stats = useMemo(() => ({
     total: 0,
@@ -30,6 +28,11 @@ export default function RepresentativeDashboard() {
     confirmed: 0,
     cancelled: 0,
   }), []);
+
+  // Nao renderizar enquanto redireciona
+  if (!isAuthenticated || user?.role !== "representante") {
+    return null;
+  }
 
   return (
     <DashboardLayout>
