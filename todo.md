@@ -132,3 +132,10 @@
 - [x] Análise de horários mais procurados
 - [x] Gráficos de tendências
 - [x] Integrar ao AdminDashboard
+
+
+## Filtros no Calendário Admin (Nova)
+- [x] Adicionar filtro por representante
+- [x] Adicionar filtro por status
+- [x] Aplicar filtros em tempo real
+- [x] Mostrar contadores de agendamentos por filtro

@@ -1,4 +1,3 @@
-import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -19,7 +18,6 @@ import { Plus, Edit2, Trash2, Calendar, Users, Settings, Shield } from "lucide-r
 import { toast } from "sonner";
 
 export default function AdminDashboard() {
-  const { user, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [users, setUsers] = useState<any[]>([]);
@@ -27,17 +25,10 @@ export default function AdminDashboard() {
   const [showRoleDialog, setShowRoleDialog] = useState(false);
   const [newRole, setNewRole] = useState<"admin" | "representante">("representante");
 
-  // Redirecionar se nao for admin
-  useEffect(() => {
-    if (!isAuthenticated || user?.role !== "admin") {
-      navigate("/");
-    }
-  }, [isAuthenticated, user, navigate]);
+  // Auth check is handled by DashboardLayout wrapper
 
   // Carregar usuários
-  const { data: usersList } = trpc.users.list.useQuery(undefined, {
-    enabled: isAuthenticated && user?.role === "admin",
-  });
+  const { data: usersList } = trpc.users.list.useQuery();
 
   useEffect(() => {
     if (usersList) {
@@ -72,11 +63,6 @@ export default function AdminDashboard() {
       toast.error(error.message || "Erro ao deletar usuário");
     },
   });
-
-  // Nao renderizar enquanto redireciona
-  if (!isAuthenticated || user?.role !== "admin") {
-    return null;
-  }
 
   return (
     <DashboardLayout>
@@ -304,7 +290,7 @@ export default function AdminDashboard() {
                               >
                                 <Edit2 className="w-4 h-4" />
                               </Button>
-                              {u.id !== user?.id && (
+                              {u.id !== -1 && (
                                 <Button
                                   size="sm"
                                   variant="destructive"

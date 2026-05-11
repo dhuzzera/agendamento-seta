@@ -3,7 +3,8 @@ import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -11,9 +12,14 @@ export function AdminCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [filterRepresentative, setFilterRepresentative] = useState<string>("all");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
 
   // Carregar todos os agendamentos
   const { data: appointments = [] } = trpc.appointments.list.useQuery();
+  
+  // Carregar representantes
+  const { data: representatives = [] } = trpc.representatives.list.useQuery();
 
   // Gerar dias do mês
   const monthStart = startOfMonth(currentDate);
@@ -22,10 +28,23 @@ export function AdminCalendar() {
   const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
   const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
-  // Agrupar agendamentos por data
+  // Filtrar agendamentos
+  const filteredAppointments = useMemo(() => {
+    return appointments.filter((apt: any) => {
+      if (filterRepresentative !== "all" && apt.representativeId !== parseInt(filterRepresentative)) {
+        return false;
+      }
+      if (filterStatus !== "all" && apt.status !== filterStatus) {
+        return false;
+      }
+      return true;
+    });
+  }, [appointments, filterRepresentative, filterStatus]);
+
+  // Agrupar agendamentos filtrados por data
   const appointmentsByDate = useMemo(() => {
     const grouped: { [key: string]: any[] } = {};
-    appointments.forEach((apt: any) => {
+    filteredAppointments.forEach((apt: any) => {
       const dateStr = format(new Date(apt.appointmentDate), "yyyy-MM-dd");
       if (!grouped[dateStr]) {
         grouped[dateStr] = [];
@@ -33,7 +52,7 @@ export function AdminCalendar() {
       grouped[dateStr].push(apt);
     });
     return grouped;
-  }, [appointments]);
+  }, [filteredAppointments]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -56,8 +75,81 @@ export function AdminCalendar() {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
   };
 
+  const handleClearFilters = () => {
+    setFilterRepresentative("all");
+    setFilterStatus("all");
+  };
+
+  // Contar agendamentos por representante
+  const representativeCount = useMemo(() => {
+    const count: { [key: number]: number } = {};
+    appointments.forEach((apt: any) => {
+      count[apt.representativeId] = (count[apt.representativeId] || 0) + 1;
+    });
+    return count;
+  }, [appointments]);
+
+  // Contar agendamentos por status
+  const statusCount = useMemo(() => {
+    const count: { [key: string]: number } = {};
+    appointments.forEach((apt: any) => {
+      count[apt.status] = (count[apt.status] || 0) + 1;
+    });
+    return count;
+  }, [appointments]);
+
   return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Filtros</CardTitle>
+          {(filterRepresentative !== "all" || filterStatus !== "all") && (
+            <Button size="sm" variant="outline" onClick={handleClearFilters} className="gap-2">
+              <X className="w-4 h-4" />
+              Limpar Filtros
+            </Button>
+          )}
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Representante</label>
+              <Select value={filterRepresentative} onValueChange={setFilterRepresentative}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos ({appointments.length})</SelectItem>
+                  {representatives.map((rep: any) => (
+                    <SelectItem key={rep.id} value={rep.id.toString()}>
+                      Representante {rep.id} ({representativeCount[rep.id] || 0})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Status</label>
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos ({appointments.length})</SelectItem>
+                  <SelectItem value="pendente">Pendente ({statusCount["pendente"] || 0})</SelectItem>
+                  <SelectItem value="confirmado">Confirmado ({statusCount["confirmado"] || 0})</SelectItem>
+                  <SelectItem value="cancelado">Cancelado ({statusCount["cancelado"] || 0})</SelectItem>
+                  <SelectItem value="concluido">Concluído ({statusCount["concluido"] || 0})</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            Mostrando {filteredAppointments.length} de {appointments.length} agendamentos
+          </div>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Calendário de Agendamentos</CardTitle>
