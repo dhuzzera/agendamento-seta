@@ -168,3 +168,43 @@ export async function createDateBlockage(data: typeof dateBlockages.$inferInsert
   if (!db) throw new Error("Database not available");
   return db.insert(dateBlockages).values(data);
 }
+
+
+// Gerenciamento de Usuários
+export async function getAllUsers() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(users);
+}
+
+export async function updateUserRole(userId: number, role: "admin" | "representante") {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.update(users).set({ role }).where(eq(users.id, userId));
+}
+
+export async function deleteUser(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Deletar sessões do usuário
+  await db.delete(sessions).where(eq(sessions.userId, userId));
+  
+  // Deletar representante associado (se houver)
+  const rep = await getRepresentativeByUserId(userId);
+  if (rep) {
+    // Deletar links personalizados
+    await db.delete(representativeLinks).where(eq(representativeLinks.representativeId, rep.id));
+    // Deletar disponibilidades
+    await db.delete(availability).where(eq(availability.representativeId, rep.id));
+    // Deletar bloqueios de data
+    await db.delete(dateBlockages).where(eq(dateBlockages.representativeId, rep.id));
+    // Deletar agendamentos
+    await db.delete(appointments).where(eq(appointments.representativeId, rep.id));
+    // Deletar representante
+    await db.delete(representatives).where(eq(representatives.userId, userId));
+  }
+  
+  // Deletar usuário
+  return db.delete(users).where(eq(users.id, userId));
+}

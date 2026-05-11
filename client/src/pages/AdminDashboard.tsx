@@ -12,13 +12,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { trpc } from "@/lib/trpc";
 import { AppointmentStats } from "@/components/AppointmentStats";
-import { Plus, Edit2, Trash2, Calendar, Users, Settings } from "lucide-react";
+import { Plus, Edit2, Trash2, Calendar, Users, Settings, Shield } from "lucide-react";
 import { toast } from "sonner";
 
 export default function AdminDashboard() {
   const { user, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [users, setUsers] = useState<any[]>([]);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [showRoleDialog, setShowRoleDialog] = useState(false);
+  const [newRole, setNewRole] = useState<"admin" | "representante">("representante");
 
   // Redirecionar se nao for admin
   useEffect(() => {
@@ -26,6 +30,41 @@ export default function AdminDashboard() {
       navigate("/");
     }
   }, [isAuthenticated, user, navigate]);
+
+  // Carregar usuários
+  const { data: usersList } = trpc.users.list.useQuery(undefined, {
+    enabled: isAuthenticated && user?.role === "admin",
+  });
+
+  useEffect(() => {
+    if (usersList) {
+      setUsers(usersList);
+    }
+  }, [usersList]);
+
+  // Mutations
+  const updateRoleMutation = trpc.users.updateRole.useMutation({
+    onSuccess: () => {
+      toast.success("Role atualizado com sucesso!");
+      setShowRoleDialog(false);
+      // Refetch users
+      trpc.useUtils().users.list.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erro ao atualizar role");
+    },
+  });
+
+  const deleteMutation = trpc.users.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Usuário deletado com sucesso!");
+      // Refetch users
+      trpc.useUtils().users.list.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erro ao deletar usuário");
+    },
+  });
 
   // Nao renderizar enquanto redireciona
   if (!isAuthenticated || user?.role !== "admin") {
@@ -45,7 +84,7 @@ export default function AdminDashboard() {
 
         {/* Tabs Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <span>Dashboard</span>
             </TabsTrigger>
@@ -56,6 +95,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="representatives" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               <span>Representantes</span>
+            </TabsTrigger>
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              <span>Usuários</span>
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
@@ -208,7 +251,81 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          {/* TAB 4: Configurações */}
+          {/* TAB 4: Usuários */}
+          <TabsContent value="users" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Gerenciar Usuários</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Role</TableHead>
+                        <TableHead>Data de Cadastro</TableHead>
+                        <TableHead>Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {users.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                            Nenhum usuário encontrado
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        users.map((u) => (
+                          <TableRow key={u.id}>
+                            <TableCell>{u.name || "Sem nome"}</TableCell>
+                            <TableCell>{u.email}</TableCell>
+                            <TableCell>
+                              <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                                u.role === "admin" ? "bg-red-100 text-red-800" : "bg-blue-100 text-blue-800"
+                              }`}>
+                                {u.role === "admin" ? "Admin" : "Representante"}
+                              </span>
+                            </TableCell>
+                            <TableCell>{new Date(u.createdAt).toLocaleDateString("pt-BR")}</TableCell>
+                            <TableCell className="space-x-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setSelectedUser(u);
+                                  setNewRole(u.role === "admin" ? "representante" : "admin");
+                                  setShowRoleDialog(true);
+                                }}
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              {u.id !== user?.id && (
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => {
+                                    if (confirm(`Tem certeza que deseja deletar ${u.name}?`)) {
+                                      deleteMutation.mutate({ userId: u.id });
+                                    }
+                                  }}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* TAB 5: Configurações */}
           <TabsContent value="settings" className="space-y-6">
             <Card>
               <CardHeader>
@@ -264,6 +381,43 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Dialog para alterar role */}
+        <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Alterar Role de {selectedUser?.name}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="role-select">Novo Role</Label>
+                <Select value={newRole} onValueChange={(value: any) => setNewRole(value)}>
+                  <SelectTrigger id="role-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="representante">Representante</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                className="w-full"
+                onClick={() => {
+                  if (selectedUser) {
+                    updateRoleMutation.mutate({
+                      userId: selectedUser.id,
+                      role: newRole,
+                    });
+                  }
+                }}
+                disabled={updateRoleMutation.isPending}
+              >
+                {updateRoleMutation.isPending ? "Atualizando..." : "Atualizar Role"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

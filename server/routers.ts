@@ -1,4 +1,5 @@
 import { COOKIE_NAME } from "@shared/const";
+import { adminProcedure } from "./_core/trpc";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
@@ -203,6 +204,51 @@ export const appRouter = router({
           input.appointmentId,
           input.status
         );
+      }),
+  }),
+
+  // Gerenciamento de Usuários (Admin Only)
+  users: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      return dbHelpers.getAllUsers();
+    }),
+    updateRole: protectedProcedure
+      .input(
+        z.object({
+          userId: z.number(),
+          role: z.enum(["admin", "representante"]),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        // Não permitir deletar o próprio admin
+        if (input.userId === ctx.user.id && input.role !== "admin") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Você não pode remover suas próprias permissões de admin",
+          });
+        }
+        return dbHelpers.updateUserRole(input.userId, input.role);
+      }),
+    delete: protectedProcedure
+      .input(z.object({ userId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        // Não permitir deletar a si mesmo
+        if (input.userId === ctx.user.id) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Você não pode deletar sua própria conta",
+          });
+        }
+        return dbHelpers.deleteUser(input.userId);
       }),
   }),
 
