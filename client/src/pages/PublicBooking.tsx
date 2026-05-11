@@ -20,7 +20,9 @@ export default function PublicBooking() {
   const [, navigate] = useLocation();
   
   // Não processar rotas especiais como /404, /admin, /representante
-  if (slug === "404" || slug === "admin" || slug === "representante") {
+  // Remove query strings para verificação (ex: "404?from_webdev=1" -> "404")
+  const cleanSlug = slug?.split("?")[0] || "";
+  if (cleanSlug === "404" || cleanSlug === "admin" || cleanSlug === "representante") {
     return null; // Deixar wouter rotear para o componente correto
   }
 
@@ -36,10 +38,10 @@ export default function PublicBooking() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Buscar link pelo slug
+  // Buscar link pelo slug (remove query strings)
   const { data: link, isLoading: linkLoading, error: linkError } = trpc.links.getBySlug.useQuery(
-    { slug: slug || "" },
-    { enabled: !!slug }
+    { slug: cleanSlug },
+    { enabled: !!cleanSlug }
   );
 
   // Criar agendamento mutation
