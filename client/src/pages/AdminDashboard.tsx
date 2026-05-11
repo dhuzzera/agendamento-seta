@@ -60,6 +60,7 @@ export default function AdminDashboard() {
       toast.success("Usuário deletado com sucesso!");
       // Refetch users
       trpc.useUtils().users.list.invalidate();
+      setUsers(users.filter(u => u.id !== selectedUser?.id));
     },
     onError: (error) => {
       toast.error(error.message || "Erro ao deletar usuário");
@@ -305,8 +306,10 @@ export default function AdminDashboard() {
                                 <Button
                                   size="sm"
                                   variant="destructive"
+                                  disabled={deleteMutation.isPending}
                                   onClick={() => {
                                     if (confirm(`Tem certeza que deseja deletar ${u.name}?`)) {
+                                      setSelectedUser(u);
                                       deleteMutation.mutate({ userId: u.id });
                                     }
                                   }}
