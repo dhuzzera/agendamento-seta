@@ -8,6 +8,7 @@ import { z } from "zod";
 import * as dbHelpers from "./db";
 import { nanoid } from "nanoid";
 import { sendEmail, getAppointmentEmailTemplate, getConfirmationEmailTemplate, getCancellationEmailTemplate } from "./_core/email";
+import * as caldav from "./_core/caldav";
 
 export const appRouter = router({
   system: systemRouter,
@@ -390,6 +391,27 @@ export const appRouter = router({
           throw new TRPCError({ code: "FORBIDDEN" });
         }
         return dbHelpers.deleteDateBlockage(input.blockageId);
+      }),
+  }),
+
+  // CalDAV
+  caldav: router({
+    getCredentials: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "representante" && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const rep = await dbHelpers.getRepresentativeByUserId(ctx.user.id);
+      if (!rep) throw new TRPCError({ code: "NOT_FOUND" });
+      return caldav.getCalDAVCredentials(rep.id);
+    }),
+    generateFeed: publicProcedure
+      .input(z.object({ representativeId: z.number(), token: z.string() }))
+      .query(async ({ input }) => {
+        const calendar = caldav.getCalDAVCalendarByToken(input.token);
+        if (!calendar || calendar.representativeId !== input.representativeId) {
+          throw new TRPCError({ code: "UNAUTHORIZED" });
+        }
+        return caldav.generateCalendarFeed(input.representativeId);
       }),
   }),
 });

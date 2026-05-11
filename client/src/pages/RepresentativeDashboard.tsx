@@ -7,6 +7,7 @@ import { Calendar, Clock, CheckCircle2, X, Edit2, Copy, Check } from "lucide-rea
 import { trpc } from "@/lib/trpc";
 import { BookingLinkCard } from "@/components/BookingLinkCard";
 import { DateBlockageManager } from "@/components/DateBlockageManager";
+import { CalDAVConnection } from "@/components/CalDAVConnection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -350,6 +351,8 @@ export default function RepresentativeDashboard() {
                 <DateBlockageManager representativeId={user?.id || 0} />
               </CardContent>
             </Card>
+
+            <CalDAVConnection />
 
             <Card>
               <CardHeader>

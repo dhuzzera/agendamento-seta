@@ -153,3 +153,11 @@
 - [x] Validar conflito de hor\u00e1rios com dura\u00e7\u00e3o de 1h
 - [x] Mostrar dias cheios como indispon\u00edveis no calend\u00e1rio p\u00fablico
 - [x] Desabilitar sele\u00e7\u00e3o de datas indispon\u00edveis
+
+
+## Integra\u00e7\u00e3o CalDAV (Nova)
+- [x] Implementar servidor CalDAV para sincroniza\u00e7\u00e3o de calend\u00e1rios
+- [x] Criar endpoints de sincroniza\u00e7\u00e3o (GET, PUT, DELETE)
+- [x] Gerar URLs de acesso CalDAV \u00fanicas por representante
+- [x] Adicionar UI para conectar calend\u00e1rio no dashboard
+- [x] Testar sincroniza\u00e7\u00e3o com Google Calendar, Outlook e Apple Calendar
