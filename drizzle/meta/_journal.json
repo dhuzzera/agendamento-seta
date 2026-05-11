@@ -36,6 +36,13 @@
       "when": 1778262737955,
       "tag": "0004_mean_rictor",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1778498314774,
+      "tag": "0005_dapper_kingpin",
+      "breakpoints": true
     }
   ]
 }

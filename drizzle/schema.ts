@@ -111,6 +111,7 @@ export const appointments = mysqlTable("appointments", {
   appointmentType: mysqlEnum("appointmentType", ["reuniao_online", "visita_presencial", "ligacao"]).notNull(),
   appointmentDate: date("appointmentDate").notNull(),
   appointmentTime: time("appointmentTime").notNull(),
+  durationMinutes: int("durationMinutes").default(60).notNull(), // Duração mínima: 60 minutos (1h)
   notes: text("notes"),
   status: mysqlEnum("status", ["pendente", "confirmado", "cancelado", "concluido"]).default("pendente").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

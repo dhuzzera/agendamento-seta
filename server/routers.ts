@@ -346,6 +346,16 @@ export const appRouter = router({
           intervalMinutes: input.intervalMinutes,
         });
       }),
+    getForDate: publicProcedure
+      .input(z.object({ representativeId: z.number(), date: z.string() }))
+      .query(async ({ input }) => {
+        return dbHelpers.getAvailableTimesForDate(input.representativeId, input.date);
+      }),
+    isDayFull: publicProcedure
+      .input(z.object({ representativeId: z.number(), date: z.string() }))
+      .query(async ({ input }) => {
+        return dbHelpers.isDayFullyBooked(input.representativeId, input.date);
+      }),
   }),
 
   // Bloqueio de Datas

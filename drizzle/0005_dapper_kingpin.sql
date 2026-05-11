@@ -1,0 +1,1 @@
+ALTER TABLE `appointments` ADD `durationMinutes` int DEFAULT 60 NOT NULL;

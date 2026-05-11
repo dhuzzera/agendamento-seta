@@ -146,3 +146,10 @@
 - [x] Definir hor\u00e1rios padr\u00f5es (Seg-Sex 7h-18h) na cria\u00e7\u00e3o de representante
 - [x] Integrar hor\u00e1rios padr\u00f5es na valida\u00e7\u00e3o de agendamentos
 - [x] Permitir edi\u00e7\u00e3o de hor\u00e1rios no dashboard do representante
+
+
+## Dura\u00e7\u00e3o M\u00ednima e Hor\u00e1rios Indispon\u00edveis (Nova)
+- [x] Definir dura\u00e7\u00e3o m\u00ednima de 1h para agendamentos
+- [x] Validar conflito de hor\u00e1rios com dura\u00e7\u00e3o de 1h
+- [x] Mostrar dias cheios como indispon\u00edveis no calend\u00e1rio p\u00fablico
+- [x] Desabilitar sele\u00e7\u00e3o de datas indispon\u00edveis
