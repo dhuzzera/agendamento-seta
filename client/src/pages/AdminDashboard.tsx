@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { trpc } from "@/lib/trpc";
 import { AppointmentStats } from "@/components/AppointmentStats";
 import { ReportsTab } from "@/components/ReportsTab";
+import { AdminCalendar } from "@/components/AdminCalendar";
+import { PerformanceDashboard } from "@/components/PerformanceDashboard";
 import { Plus, Edit2, Trash2, Calendar, Users, Settings, Shield } from "lucide-react";
 import { toast } from "sonner";
 
@@ -89,9 +91,13 @@ export default function AdminDashboard() {
 
         {/* Tabs Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <span>Dashboard</span>
+            </TabsTrigger>
+            <TabsTrigger value="calendar" className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              <span>Calendário</span>
             </TabsTrigger>
             <TabsTrigger value="appointments" className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
@@ -116,26 +122,15 @@ export default function AdminDashboard() {
 
           {/* TAB 1: Dashboard */}
           <TabsContent value="dashboard" className="space-y-6">
-            <AppointmentStats data={{
-              total: 0,
-              pending: 0,
-              confirmed: 0,
-              cancelled: 0,
-            }} />
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>Agendamentos Recentes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm">
-                  Nenhum agendamento ainda. Os agendamentos aparecerão aqui quando clientes criarem via links personalizados.
-                </p>
-              </CardContent>
-            </Card>
+            <PerformanceDashboard />
           </TabsContent>
 
-          {/* TAB 2: Agendamentos */}
+          {/* TAB 2: Calendário */}
+          <TabsContent value="calendar" className="space-y-6">
+            <AdminCalendar />
+          </TabsContent>
+
+          {/* TAB 3: Agendamentos */}
           <TabsContent value="appointments" className="space-y-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">

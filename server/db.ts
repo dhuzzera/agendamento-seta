@@ -196,6 +196,19 @@ export async function getAllAppointments() {
   return db.select().from(appointments).orderBy(appointments.appointmentDate);
 }
 
+// Obter representante com nome do usuário
+export async function getRepresentativeWithUser(representativeId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rep = await db.select().from(representatives).where(eq(representatives.id, representativeId));
+  if (!rep[0]) return null;
+  const user = await db.select().from(users).where(eq(users.id, rep[0].userId));
+  return {
+    ...rep[0],
+    userName: user[0]?.name || "Desconhecido",
+  };
+}
+
 
 // Gerenciamento de Usuários
 export async function getAllUsers() {

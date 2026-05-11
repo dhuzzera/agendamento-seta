@@ -117,3 +117,18 @@
 - [x] Gerar relatório de agendamentos em CSV
 - [x] Interface para filtrar e exportar dados
 - [x] Incluir estatísticas no relatório
+
+
+## Calendário Integrado Admin (Nova)
+- [x] Criar componente de calendário semanal/mensal
+- [x] Exibir todos os agendamentos no calendário
+- [x] Cores diferentes por status (pendente, confirmado, cancelado)
+- [x] Visualização de detalhes ao clicar no agendamento
+- [x] Integrar ao AdminDashboard
+
+## Dashboard de Performance (Nova)
+- [x] Calcular taxa de confirmação de agendamentos
+- [x] Identificar representante mais ativo
+- [x] Análise de horários mais procurados
+- [x] Gráficos de tendências
+- [x] Integrar ao AdminDashboard
