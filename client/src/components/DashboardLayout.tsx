@@ -27,9 +27,8 @@ import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
-const menuItems = [
-  { icon: LayoutDashboard, label: "Page 1", path: "/" },
-  { icon: Users, label: "Page 2", path: "/some-path" },
+const getMenuItems = (role?: string) => [
+  { icon: LayoutDashboard, label: role === "admin" ? "Dashboard Admin" : "Dashboard Representante", path: role === "admin" ? "/admin" : "/representante" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -112,6 +111,7 @@ function DashboardLayoutContent({
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const menuItems = getMenuItems(user?.role);
   const activeMenuItem = menuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
 
@@ -171,7 +171,7 @@ function DashboardLayoutContent({
               {!isCollapsed ? (
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="font-semibold tracking-tight truncate">
-                    Navigation
+                    {user?.role === "admin" ? "Admin" : "Representante"}
                   </span>
                 </div>
               ) : null}
@@ -181,7 +181,7 @@ function DashboardLayoutContent({
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-2 py-1">
               {menuItems.map(item => {
-                const isActive = location === item.path;
+                const isActive = location === item.path || (item.path === "/admin" && location.startsWith("/admin")) || (item.path === "/representante" && location.startsWith("/representante"));
                 return (
                   <SidebarMenuItem key={item.path}>
                     <SidebarMenuButton
