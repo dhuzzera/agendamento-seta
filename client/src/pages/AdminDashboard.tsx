@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { trpc } from "@/lib/trpc";
 import { AppointmentStats } from "@/components/AppointmentStats";
+import { ReportsTab } from "@/components/ReportsTab";
 import { Plus, Edit2, Trash2, Calendar, Users, Settings, Shield } from "lucide-react";
 import { toast } from "sonner";
 
@@ -88,7 +89,7 @@ export default function AdminDashboard() {
 
         {/* Tabs Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="dashboard" className="flex items-center gap-2">
               <span>Dashboard</span>
             </TabsTrigger>
@@ -103,6 +104,9 @@ export default function AdminDashboard() {
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Shield className="w-4 h-4" />
               <span>Usuários</span>
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="flex items-center gap-2">
+              <span>Relatórios</span>
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
@@ -385,6 +389,11 @@ export default function AdminDashboard() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* TAB 5: Relatórios */}
+          <TabsContent value="reports" className="space-y-6">
+            <ReportsTab />
           </TabsContent>
         </Tabs>
 

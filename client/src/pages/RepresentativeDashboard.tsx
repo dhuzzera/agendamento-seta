@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Clock, CheckCircle2, X, Edit2, Copy, Check } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { BookingLinkCard } from "@/components/BookingLinkCard";
+import { DateBlockageManager } from "@/components/DateBlockageManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -338,6 +339,15 @@ export default function RepresentativeDashboard() {
                     </div>
                   </DialogContent>
                 </Dialog>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Bloquear Datas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DateBlockageManager representativeId={user?.id || 0} />
               </CardContent>
             </Card>
 

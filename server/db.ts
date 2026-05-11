@@ -169,6 +169,33 @@ export async function createDateBlockage(data: typeof dateBlockages.$inferInsert
   return db.insert(dateBlockages).values(data);
 }
 
+export async function getDateBlockagesByRepresentativeId(representativeId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(dateBlockages).where(eq(dateBlockages.representativeId, representativeId));
+}
+
+export async function deleteDateBlockage(blockageId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(dateBlockages).where(eq(dateBlockages.id, blockageId));
+}
+
+// Obter agendamento por ID
+export async function getAppointmentById(appointmentId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(appointments).where(eq(appointments.id, appointmentId));
+  return result[0] || null;
+}
+
+// Obter todos os agendamentos (para admin)
+export async function getAllAppointments() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(appointments).orderBy(appointments.appointmentDate);
+}
+
 
 // Gerenciamento de Usuários
 export async function getAllUsers() {

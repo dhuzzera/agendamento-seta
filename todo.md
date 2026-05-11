@@ -98,3 +98,22 @@
 - [x] Atualizar AuthTabs com campo de senha
 - [x] Validar força da senha no cadastro
 - [x] Testes de autenticação com senha (10 testes passando)
+
+
+## Bloqueio de Datas (Nova)
+- [x] Criar interface para representantes bloquearem datas
+- [x] Implementar API tRPC para gerenciar bloqueios
+- [x] Integrar bloqueios ao calendário de agendamento público
+- [x] Validar conflitos entre bloqueios e agendamentos
+
+## Notificações por E-mail ao Cliente (Nova)
+- [x] Enviar e-mail de confirmação quando representante confirmar agendamento
+- [x] Enviar e-mail de cancelamento quando representante cancelar
+- [x] Templates de e-mail profissionais
+- [x] Testes de notificações
+
+## Relatórios e Exportação (Nova)
+- [x] Gerar relatório de agendamentos em PDF
+- [x] Gerar relatório de agendamentos em CSV
+- [x] Interface para filtrar e exportar dados
+- [x] Incluir estatísticas no relatório

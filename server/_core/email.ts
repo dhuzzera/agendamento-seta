@@ -150,6 +150,91 @@ export function getAppointmentEmailTemplate(data: {
 }
 
 /**
+ * Template de e-mail para cancelamento de agendamento (cliente)
+ */
+export function getCancellationEmailTemplate(data: {
+  clientName: string;
+  appointmentType: string;
+  appointmentDate: string;
+  appointmentTime: string;
+  representativeName: string;
+  reason?: string;
+}): string {
+  const appointmentTypeLabel = {
+    reuniao_online: "Reunião Online",
+    visita_presencial: "Visita Presencial",
+    ligacao: "Ligação",
+  }[data.appointmentType] || data.appointmentType;
+
+  return `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: 'Montserrat', sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background-color: #005383; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center; }
+    .content { background-color: #f9f9f9; padding: 20px; border: 1px solid #ddd; border-radius: 0 0 8px 8px; }
+    .warning-box { background-color: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 4px; margin: 20px 0; }
+    .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+    .info-label { font-weight: 500; color: #666; }
+    .info-value { color: #333; }
+    .footer { text-align: center; color: #999; font-size: 12px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Agendamento Cancelado</h1>
+    </div>
+    <div class="content">
+      <p>Olá <strong>${data.clientName}</strong>,</p>
+      
+      <div class="warning-box">
+        <p>Seu agendamento foi cancelado pelo representante.</p>
+      </div>
+
+      <p>Detalhes do agendamento cancelado:</p>
+
+      <div class="info-row">
+        <span class="info-label">Tipo de Atendimento:</span>
+        <span class="info-value">${appointmentTypeLabel}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Data:</span>
+        <span class="info-value">${new Date(data.appointmentDate).toLocaleDateString("pt-BR")}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Horário:</span>
+        <span class="info-value">${data.appointmentTime}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Representante:</span>
+        <span class="info-value">${data.representativeName}</span>
+      </div>
+
+      ${data.reason ? `
+      <div style="margin-top: 20px; padding: 15px; background-color: #f0f0f0; border-radius: 4px;">
+        <p><strong>Motivo do cancelamento:</strong></p>
+        <p>${data.reason}</p>
+      </div>
+      ` : ""}
+
+      <p style="margin-top: 20px;">Se tiver dúvidas, entre em contato com nosso representante. Obrigado!</p>
+      
+      <div class="footer">
+        <p>Este é um e-mail automático do sistema Agendamento Seta. Por favor, não responda este e-mail.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+}
+
+/**
  * Template de e-mail para confirmação de agendamento (cliente)
  */
 export function getConfirmationEmailTemplate(data: {

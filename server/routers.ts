@@ -7,7 +7,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import * as dbHelpers from "./db";
 import { nanoid } from "nanoid";
-import { sendEmail, getAppointmentEmailTemplate, getConfirmationEmailTemplate } from "./_core/email";
+import { sendEmail, getAppointmentEmailTemplate, getConfirmationEmailTemplate, getCancellationEmailTemplate } from "./_core/email";
 
 export const appRouter = router({
   system: systemRouter,
@@ -83,8 +83,7 @@ export const appRouter = router({
         if (!rep) throw new TRPCError({ code: "NOT_FOUND" });
         return dbHelpers.getAppointmentsByRepresentativeId(rep.id);
       } else if (ctx.user.role === "admin") {
-        // Admin vê todos - implementar depois com query geral
-        return [];
+        return dbHelpers.getAllAppointments();
       }
       throw new TRPCError({ code: "FORBIDDEN" });
     }),
@@ -200,6 +199,67 @@ export const appRouter = router({
         ) {
           throw new TRPCError({ code: "FORBIDDEN" });
         }
+        
+        // Se confirmando, enviar email de confirmacao ao cliente
+        if (input.status === "confirmado") {
+          try {
+            const appointment = await dbHelpers.getAppointmentById(input.appointmentId);
+            if (appointment) {
+              const representative = await dbHelpers.getRepresentativeById(appointment.representativeId);
+              const representativeUser = representative ? await dbHelpers.getUserById(representative.userId) : null;
+              
+              const appointmentDateStr = appointment.appointmentDate instanceof Date
+                ? appointment.appointmentDate.toISOString().split('T')[0]
+                : appointment.appointmentDate;
+              
+              const confirmationEmailHtml = getConfirmationEmailTemplate({
+                clientName: appointment.clientName,
+                appointmentType: appointment.appointmentType,
+                appointmentDate: appointmentDateStr,
+                appointmentTime: appointment.appointmentTime,
+                representativeName: representativeUser?.name || "Seta Embalagens",
+              });
+              await sendEmail({
+                to: appointment.clientEmail,
+                subject: "Agendamento Confirmado - Seta Embalagens",
+                html: confirmationEmailHtml,
+              });
+            }
+          } catch (error) {
+            console.error("[Appointments] Error sending confirmation email:", error);
+          }
+        }
+        
+        // Se cancelando, enviar email ao cliente
+        if (input.status === "cancelado") {
+          try {
+            const appointment = await dbHelpers.getAppointmentById(input.appointmentId);
+            if (appointment) {
+              const representative = await dbHelpers.getRepresentativeById(appointment.representativeId);
+              const representativeUser = representative ? await dbHelpers.getUserById(representative.userId) : null;
+              
+              const appointmentDateStr = appointment.appointmentDate instanceof Date
+                ? appointment.appointmentDate.toISOString().split('T')[0]
+                : appointment.appointmentDate;
+              
+              const cancellationEmailHtml = getCancellationEmailTemplate({
+                clientName: appointment.clientName,
+                appointmentType: appointment.appointmentType,
+                appointmentDate: appointmentDateStr,
+                appointmentTime: appointment.appointmentTime,
+                representativeName: representativeUser?.name || "Seta Embalagens",
+              });
+              await sendEmail({
+                to: appointment.clientEmail,
+                subject: "Agendamento Cancelado - Seta Embalagens",
+                html: cancellationEmailHtml,
+              });
+            }
+          } catch (error) {
+            console.error("[Appointments] Error sending cancellation email:", error);
+          }
+        }
+        
         return dbHelpers.updateAppointmentStatus(
           input.appointmentId,
           input.status
@@ -285,6 +345,41 @@ export const appRouter = router({
           endTime: input.endTime,
           intervalMinutes: input.intervalMinutes,
         });
+      }),
+  }),
+
+  // Bloqueio de Datas
+  dateBlockages: router({
+    list: publicProcedure
+      .input(z.object({ representativeId: z.number() }))
+      .query(async ({ input }) => {
+        return dbHelpers.getDateBlockagesByRepresentativeId(input.representativeId);
+      }),
+    create: protectedProcedure
+      .input(
+        z.object({
+          representativeId: z.number(),
+          blockedDate: z.string(),
+          reason: z.string().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin" && ctx.user.role !== "representante") {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        return dbHelpers.createDateBlockage({
+          representativeId: input.representativeId,
+          blockedDate: new Date(input.blockedDate),
+          reason: input.reason,
+        });
+      }),
+    delete: protectedProcedure
+      .input(z.object({ blockageId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin" && ctx.user.role !== "representante") {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        return dbHelpers.deleteDateBlockage(input.blockageId);
       }),
   }),
 });

@@ -44,6 +44,12 @@ export default function PublicBooking() {
     { enabled: !!cleanSlug }
   );
 
+  // Carregar bloqueios de datas
+  const { data: blockages = [] } = trpc.dateBlockages.list.useQuery(
+    { representativeId: link?.representativeId || 0 },
+    { enabled: !!link?.representativeId }
+  );
+
   // Criar agendamento mutation
   const createAppointmentMutation = trpc.appointments.create.useMutation();
 
@@ -233,6 +239,10 @@ export default function PublicBooking() {
                   <CalendarPicker
                     onDateTimeSelect={handleDateTimeSelect}
                     isLoading={isSubmitting}
+                    blockedDates={blockages.map(b => {
+                      const date = new Date(b.blockedDate);
+                      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                    })}
                   />
                 </div>
                 <Button
