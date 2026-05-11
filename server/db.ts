@@ -82,7 +82,33 @@ export async function getAllRepresentatives() {
 export async function createRepresentative(data: typeof representatives.$inferInsert) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  return db.insert(representatives).values(data);
+  
+  // Insert representative
+  const result = await db.insert(representatives).values(data);
+  const representativeId = (result as any).insertId || (result as any)[0]?.id;
+  
+  // Create default working hours (Monday to Friday, 7am to 6pm)
+  const defaultHours = [
+    { dayOfWeek: 1, startTime: "07:00:00", endTime: "18:00:00" }, // Monday
+    { dayOfWeek: 2, startTime: "07:00:00", endTime: "18:00:00" }, // Tuesday
+    { dayOfWeek: 3, startTime: "07:00:00", endTime: "18:00:00" }, // Wednesday
+    { dayOfWeek: 4, startTime: "07:00:00", endTime: "18:00:00" }, // Thursday
+    { dayOfWeek: 5, startTime: "07:00:00", endTime: "18:00:00" }, // Friday
+  ];
+  
+  if (representativeId) {
+    for (const hours of defaultHours) {
+      await db.insert(availability).values({
+        representativeId: representativeId as number,
+        dayOfWeek: hours.dayOfWeek,
+        startTime: hours.startTime as any,
+        endTime: hours.endTime as any,
+        intervalMinutes: 60,
+      });
+    }
+  }
+  
+  return result;
 }
 
 // Links personalizados

@@ -139,3 +139,10 @@
 - [x] Adicionar filtro por status
 - [x] Aplicar filtros em tempo real
 - [x] Mostrar contadores de agendamentos por filtro
+
+
+## Hor\u00e1rios Padr\u00f5es para Novos Representantes (Nova)
+- [x] Criar tabela de hor\u00e1rios de trabalho no schema
+- [x] Definir hor\u00e1rios padr\u00f5es (Seg-Sex 7h-18h) na cria\u00e7\u00e3o de representante
+- [x] Integrar hor\u00e1rios padr\u00f5es na valida\u00e7\u00e3o de agendamentos
+- [x] Permitir edi\u00e7\u00e3o de hor\u00e1rios no dashboard do representante
