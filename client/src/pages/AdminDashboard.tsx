@@ -42,13 +42,16 @@ export default function AdminDashboard() {
     }
   }, [usersList]);
 
+
   // Mutations
+  const utils = trpc.useUtils();
+
   const updateRoleMutation = trpc.users.updateRole.useMutation({
     onSuccess: () => {
       toast.success("Role atualizado com sucesso!");
       setShowRoleDialog(false);
       // Refetch users
-      trpc.useUtils().users.list.invalidate();
+      utils.users.list.invalidate();
     },
     onError: (error) => {
       toast.error(error.message || "Erro ao atualizar role");
@@ -59,7 +62,7 @@ export default function AdminDashboard() {
     onSuccess: () => {
       toast.success("Usuário deletado com sucesso!");
       // Refetch users
-      trpc.useUtils().users.list.invalidate();
+      utils.users.list.invalidate();
       setUsers(users.filter(u => u.id !== selectedUser?.id));
     },
     onError: (error) => {
